@@ -1,0 +1,5 @@
+model,train_RMSE,test_RMSE,train_MAE,test_MAE,train_R2,test_R2
+SGDRegressor (SGD),49.007,49.989,32.923,33.411,0.815,0.819
+LinearRegression (OLS),46.871,48.188,30.397,31.07,0.831,0.832
+RandomForestRegressor,7.398,11.107,2.891,4.41,0.996,0.991
+DecisionTreeRegressor,8.606,12.154,3.335,4.904,0.994,0.989
