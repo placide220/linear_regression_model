@@ -3,22 +3,35 @@
 A single-page Flutter app that calls the FastAPI `/predict` endpoint from
 Task 2 and displays the predicted `count` value.
 
+## Why only 4 fields
+This app originally had 38 input fields, matching the full feature set the
+model was first trained on. Random Forest's feature-importance analysis
+(see the notebook, Section 11) showed that just 4 of those 38 features --
+`same_srv_rate`, `srv_count`, `dst_host_diff_srv_rate`, `diff_srv_rate` --
+account for essentially all of the model's predictive power. Retraining on
+just those 4 reaches 0.983 test R^2, within 0.8 points of the full
+38-feature model's 0.991. The deployed API and this app were both
+simplified to use only these 4 fields, since the other 34 contributed
+almost nothing but made the form far more tedious to fill in and test.
+
 ## What's in this folder
 ```
-flutter_app/
+FlutterApp/
 ├── lib/
 │   ├── main.dart                          # app entry point (MaterialApp only)
 │   ├── config/
 │   │   └── api_config.dart                # API base URL + path constants
 │   ├── models/
-│   │   ├── field_spec.dart                # FieldSpec class, FieldKind enum, category value lists
-│   │   ├── field_sections.dart            # the 38 fields, grouped into labeled sections
-│   │   └── field_validator.dart           # validation + type-coercion logic (pure, no UI)
+│   │   ├── field_spec.dart                # FieldSpec class, FieldKind enum
+│   │   ├── field_sections.dart            # the 4 fields
+│   │   ├── field_defaults.dart            # pre-filled example values
+│   │   ├── field_validator.dart           # validation + type-coercion logic (pure, no UI)
+│   │   └── scenario_presets.dart          # one-tap test scenarios (typical / moderate / suspicious)
 │   ├── services/
 │   │   └── prediction_service.dart        # all networking: calls POST /predict, parses errors
 │   ├── widgets/
 │   │   ├── prediction_field.dart          # one TextFormField per model variable
-│   │   ├── section_card.dart              # labeled card grouping related fields
+│   │   ├── section_card.dart              # labeled card grouping fields
 │   │   └── result_banner.dart             # idle/loading/success/error display area
 │   └── pages/
 │       └── prediction_page.dart           # the single page, wires everything together
@@ -30,15 +43,6 @@ and each UI piece are all separated rather than crammed into `main.dart`.
 This is still a **single-page app** — the file split is purely internal
 code organization, not multiple screens/routes.
 
-> **Disclosure:** this sandbox has no Flutter SDK and no internet access,
-> so I was not able to run `flutter create`, `flutter pub get`, or
-> `flutter run`/`flutter analyze` to compile-check this. I traced through
-> the code by hand and cross-checked every field name against the FastAPI
-> Pydantic schema (`api/app/schemas.py`) to confirm all 38 variables match
-> exactly, but please run `flutter analyze` yourself after setup, before
-> you rely on it, in case anything needs a small fix for your Flutter/Dart
-> SDK version.
-
 ## Setup
 
 1. Install the [Flutter SDK](https://docs.flutter.dev/get-started/install) if you haven't already.
@@ -48,15 +52,15 @@ code organization, not multiple screens/routes.
    cd count_predictor_app
    # replace the generated lib/ folder and pubspec.yaml with the ones from this project
    rm -rf lib
-   cp -r /path/to/flutter_app/lib lib
-   cp /path/to/flutter_app/pubspec.yaml pubspec.yaml
+   cp -r /path/to/FlutterApp/lib lib
+   cp /path/to/FlutterApp/pubspec.yaml pubspec.yaml
    flutter pub get
    ```
-3. **API URL is already set** — `kApiBaseUrl` in `lib/main.dart` is already pointed at your deployed service:
+3. **API URL is already set** in `lib/config/api_config.dart`:
    ```dart
    const String kApiBaseUrl = "https://api-2-56aa.onrender.com";
    ```
-   If you redeploy to a different Render URL later, update this constant.
+   Update this constant if you redeploy to a different Render URL.
 4. Run it:
    ```bash
    flutter run -d chrome     # easiest for quick testing
@@ -73,14 +77,14 @@ doesn't apply once you point `kApiBaseUrl` at the deployed Render URL.
 ## What the app does
 
 - **One page** (`PredictionPage`), no navigation.
-- **38 `TextFormField`s** — exactly one per model input variable (3
-  categorical: `protocol_type`, `service`, `flag`; 35 numeric), grouped
-  under labeled section cards (Connection type, Traffic volume, Connection
-  flags, etc.) purely for readability — it's still a single scrollable page.
-- Each field shows its valid range/allowed values as helper text, and is
-  validated **client-side** (required + type + range) using the same
-  bounds as the Pydantic model in Task 2, so obviously-bad input is caught
-  before a network call is even made.
+- **4 `TextFormField`s** — exactly one per model input variable, all
+  grouped in a single "Connection features" card (there's no longer a
+  meaningful subgrouping to make with only 4 fields).
+- Each field shows its valid range and its share of the model's predictive
+  weight as helper text, and is validated **client-side** (required + type
+  + range) using the same bounds as the Pydantic model in Task 2.
+- **Quick test scenario chips** (Typical traffic / Moderate load /
+  Scan-like suspicious) that fill in representative values in one tap.
 - **"Predict" button** — disabled while a request is in flight (shows a
   spinner instead).
 - **Display area** at the bottom that shows:
@@ -90,13 +94,9 @@ doesn't apply once you point `kApiBaseUrl` at the deployed Render URL.
   - a generic connection-error message if the API can't be reached (red).
 
 ## Field list (matches Task 2's `PredictionInput` schema exactly)
-protocol_type, service, flag, duration, src_bytes, dst_bytes, land,
-wrong_fragment, urgent, hot, num_failed_logins, logged_in, num_compromised,
-root_shell, su_attempted, num_root, num_file_creations, num_shells,
-num_access_files, is_guest_login, srv_count, dst_host_count,
-dst_host_srv_count, serror_rate, srv_serror_rate, rerror_rate,
-srv_rerror_rate, same_srv_rate, diff_srv_rate, srv_diff_host_rate,
-dst_host_same_srv_rate, dst_host_diff_srv_rate,
-dst_host_same_src_port_rate, dst_host_srv_diff_host_rate,
-dst_host_serror_rate, dst_host_srv_serror_rate, dst_host_rerror_rate,
-dst_host_srv_rerror_rate
+| Field | Range | Model weight |
+|---|---|---|
+| `same_srv_rate` | 0.0 - 1.0 | ~52% |
+| `srv_count` | 1 - 511 | ~38% |
+| `dst_host_diff_srv_rate` | 0.0 - 1.0 | ~5% |
+| `diff_srv_rate` | 0.0 - 1.0 | ~2% |

@@ -41,7 +41,7 @@ class PredictionService {
             headers: {'Content-Type': 'application/json'},
             body: jsonEncode(payload),
           )
-          .timeout(const Duration(seconds: 20));
+          .timeout(const Duration(seconds: 60));
     } on TimeoutException {
       throw PredictionException(
           'The request timed out. Check the API URL and your connection.');

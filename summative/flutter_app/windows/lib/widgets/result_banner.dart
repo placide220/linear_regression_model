@@ -47,7 +47,7 @@ class ResultBanner extends StatelessWidget {
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color:Colors.green.withValues(alpha: 0.2),),
+        border: Border.all(color: fg.withValues(alpha: 0.25)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

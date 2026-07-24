@@ -5,8 +5,7 @@ import '../models/field_spec.dart';
 import '../models/field_validator.dart';
 
 /// Renders a single TextFormField for one [FieldSpec] -- one of these per
-/// model input variable. Handles the keyboard type, input formatting, and
-/// validation appropriate to the field's [FieldKind].
+/// model input variable.
 class PredictionField extends StatelessWidget {
   final FieldSpec spec;
   final TextEditingController controller;
@@ -27,22 +26,11 @@ class PredictionField extends StatelessWidget {
           labelText: spec.label,
           helperText: spec.hint,
           helperMaxLines: 2,
-          suffixIcon: spec.isKeyDriver
-              ? Tooltip(
-                  message: 'Key driver -- one of the fields the model '
-                      'relies on most for this prediction.',
-                  child: Icon(Icons.star, size: 18, color: Colors.amber.shade700),
-                )
-              : null,
         ),
-        keyboardType: spec.kind == FieldKind.categorical
-            ? TextInputType.text
-            : const TextInputType.numberWithOptions(decimal: true, signed: false),
+        keyboardType: const TextInputType.numberWithOptions(decimal: true, signed: false),
         inputFormatters: spec.kind == FieldKind.integer
             ? [FilteringTextInputFormatter.digitsOnly]
-            : spec.kind == FieldKind.decimal
-                ? [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))]
-                : null,
+            : [FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*'))],
         validator: (raw) => FieldValidator.validate(spec, raw),
       ),
     );
