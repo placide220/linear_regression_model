@@ -1,9 +1,0 @@
-__pycache__/
-*.pyc
-*.pyo
-.git
-.gitignore
-.python-version
-runtime.txt
-data/incoming/
-data/processed/

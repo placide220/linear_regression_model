@@ -3,11 +3,11 @@
 ## Mission
 Predict `count` — connections to the same destination host in the past two seconds — to flag scan/flood-style network anomalies early.
 Dataset: NSL-KDD network intrusion detection dataset (Kaggle), repurposed for regression on this continuous target.
-Problem: a regression task, originally over 38 connection features, simplified via feature-importance analysis to the 4 fields that actually matter.
-Best model: Random Forest — 0.991 R² on all 38 features, 0.983 R² on just 4 (deployed) — via FastAPI and a Flutter app.
+Problem: a regression task over 38 connection features (protocol, bytes, login/error rates, host-level stats).
+Best model: Random Forest, test R² = 0.991 (vs. SGD/OLS/Decision Tree) — served via FastAPI and a Flutter app.
 
-## Feature simplification
-The notebook trains and compares all 4 models on the full 38-feature set (see the comparison table below). Random Forest's `feature_importances_` showed `same_srv_rate` (~52%) and `srv_count` (~38%) alone account for ~90% of the model's predictive weight — the other 36 features are collectively marginal. Retraining Random Forest on just the top 4 features (`same_srv_rate`, `srv_count`, `dst_host_diff_srv_rate`, `diff_srv_rate`) reaches **0.983 test R²**, within 0.8 points of the full model's 0.991. **This 4-feature model is what's actually deployed** in the API and Flutter app — it keeps essentially all the predictive power while cutting the form from 38 fields down to 4.
+## Feature importance
+Random Forest's `feature_importances_` (see the notebook, Section 11) show `same_srv_rate` (~52%) and `srv_count` (~38%) alone account for ~90% of the model's predictive weight, with `dst_host_diff_srv_rate` and `diff_srv_rate` contributing most of what's left. All 38 features are kept as inputs (matching the "text box per input variable" requirement), but the Flutter app marks these 4 as "key drivers" in the UI so it's clear which values actually move the prediction.
 
 ## Dataset
 **NSL-KDD** — an improved, de-duplicated version of the classic KDD Cup 1999 network intrusion detection benchmark, one of the most widely used datasets in network-security ML research. Hosted on Kaggle (search "NSL-KDD") and other academic mirrors. Used here: `Train_data.csv` (25,192 rows) + `Test_data.csv` (22,544 rows), ~47,700 records total, with 3 categorical columns (`protocol_type`, `service` — 66 distinct values, `flag`) and 35+ numeric columns spanning byte counts, login/privilege indicators, and per-service/per-host rate statistics — genuinely rich in both volume and variety. Full EDA, correlation heatmap, and target-distribution histogram are in `summative/linear_regression/multivariate.ipynb`.

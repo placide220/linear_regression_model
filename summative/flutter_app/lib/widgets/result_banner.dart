@@ -1,44 +1,85 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_theme.dart';
+
 /// Status of the last prediction attempt, driving how [ResultBanner] looks.
 enum ResultState { idle, loading, success, error }
 
-/// The display area at the bottom of the page: shows the predicted value
-/// on success, or a clear error message for validation failures / server
-/// errors / connection problems.
+/// The display area at the bottom of the page. On success, the predicted
+/// number is shown as a large monospace readout -- the app's signature
+/// moment, styled like a console output rather than a generic alert box.
 class ResultBanner extends StatelessWidget {
   final ResultState state;
   final String message;
+  final String? readoutValue;
+  final String? readoutCaption;
 
-  const ResultBanner({super.key, required this.state, required this.message});
+  const ResultBanner({
+    super.key,
+    required this.state,
+    required this.message,
+    this.readoutValue,
+    this.readoutCaption,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final Color accent;
     final Color bg;
-    final Color fg;
     final IconData icon;
 
     switch (state) {
       case ResultState.success:
-        bg = Colors.green.shade50;
-        fg = Colors.green.shade800;
+        accent = AppColors.success;
+        bg = AppColors.successBg;
         icon = Icons.check_circle_outline;
         break;
       case ResultState.error:
-        bg = Colors.red.shade50;
-        fg = Colors.red.shade800;
+        accent = AppColors.danger;
+        bg = AppColors.dangerBg;
         icon = Icons.error_outline;
         break;
       case ResultState.loading:
-        bg = Colors.blue.shade50;
-        fg = Colors.blue.shade800;
+        accent = AppColors.accent;
+        bg = AppColors.surfaceAlt;
         icon = Icons.hourglass_top;
         break;
       case ResultState.idle:
-        bg = Colors.grey.shade100;
-        fg = Colors.black87;
+        accent = AppColors.textMuted;
+        bg = AppColors.surface;
         icon = Icons.info_outline;
         break;
+    }
+
+    if (state == ResultState.success && readoutValue != null) {
+      return Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: accent.withValues(alpha: 0.35)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, color: accent, size: 16),
+                const SizedBox(width: 6),
+                Text('PREDICTED COUNT',
+                    style: AppTheme.body(fontSize: 11, fontWeight: FontWeight.w600, color: accent)),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(readoutValue!, style: AppTheme.mono(fontSize: 40, fontWeight: FontWeight.w600, color: AppColors.textPrimary)),
+            if (readoutCaption != null) ...[
+              const SizedBox(height: 4),
+              Text(readoutCaption!, style: AppTheme.body(fontSize: 12)),
+            ],
+          ],
+        ),
+      );
     }
 
     return Container(
@@ -46,19 +87,16 @@ class ResultBanner extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: bg,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color:Colors.green.withValues(alpha: 0.2),),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: accent.withValues(alpha: 0.3)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: fg),
+          Icon(icon, color: accent, size: 18),
           const SizedBox(width: 12),
           Expanded(
-            child: Text(
-              message,
-              style: TextStyle(color: fg, fontSize: 15, height: 1.4),
-            ),
+            child: Text(message, style: AppTheme.body(fontSize: 13.5, color: AppColors.textPrimary)),
           ),
         ],
       ),
