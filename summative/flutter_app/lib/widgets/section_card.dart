@@ -26,36 +26,38 @@ class SectionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppColors.border),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Container(
-            width: 4,
-            decoration: const BoxDecoration(
-              color: AppColors.accent,
-              borderRadius: BorderRadius.horizontal(left: Radius.circular(14)),
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(icon, size: 18, color: AppColors.accent),
-                      const SizedBox(width: 8),
-                      Text(title, style: AppTheme.display(fontSize: 15)),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-                  ...children,
-                ],
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Container(
+              width: 4,
+              decoration: const BoxDecoration(
+                color: AppColors.accent,
+                borderRadius: BorderRadius.horizontal(left: Radius.circular(14)),
               ),
             ),
-          ),
-        ],
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(icon, size: 18, color: AppColors.accent),
+                        const SizedBox(width: 8),
+                        Text(title, style: AppTheme.display(fontSize: 15)),
+                      ],
+                    ),
+                    const SizedBox(height: 14),
+                    ...children,
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
