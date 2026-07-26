@@ -18,7 +18,7 @@ Random Forest's `feature_importances_` (see the notebook, Section 11) show `same
 - Free-tier hosting: the first request after ~15 minutes of inactivity may take 30-60s to wake up.
 
 ## Video demo
-- **YouTube:** _add link here_
+- **YouTube:** https://youtu.be/rwmWzWFmwog
 
 ## Repository structure
 ```
